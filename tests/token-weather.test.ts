@@ -96,8 +96,12 @@ describe('token-weather', () => {
     for (const surface of SURFACES) {
       const ui = await $.ui.mount({ plugin: 'token-weather', surface, component: 'AbovePrompt', props: band(160) })
       const text = (await ui.findAll({ type: 'Text' })).map(t => t.text).join('')
-      expect(text).toContain('5h ╍╍──── 2% · 3h32')
-      expect(text).toContain('7d ━━╍─── 53% · 4d11h')
+      expect(text).toContain('5h ▰▱▱▱▱▱▱▱ 2% · 3h32')
+      expect(text).toContain('7d ▰▰▰▰▱▱▱▱ 53% · 4d11h')
+      const cells = (await ui.findAll({ type: 'Text' }))
+        .filter(t => /^[▰▱]+$/.test(t.text))
+        .map(t => `${t.text}${t.props.color}`)
+      expect(cells).toEqual(['▰#50c878', '▱▱▱▱▱▱▱#3c3c3c', '▰▰▰▰#e64646', '▱▱▱▱#3c3c3c'])
       expect(text).toContain('cache 56 min')
       expect(text).toContain('≈ $0.41 (+$0.16)')
     }

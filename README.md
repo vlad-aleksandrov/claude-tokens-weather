@@ -3,7 +3,7 @@
 A [Claude Code](https://claude.com/claude-code) mod that shows a live forecast of your context window in the band above the prompt, next to your plan limits, the prompt cache and the session cost.
 
 ```
-☔  Showers  67% of context  134.4k / 200k   ▂▃▄▅▆█  ▲ +98.3k  │  5h ╍╍──── 2% · 3h32  │  7d ━━╍─── 53% · 4d11h  │  cache 56 min  │  ≈ $0.41 (+$0.16)
+☔  Showers  67% of context  134.4k / 200k   ▂▃▄▅▆█  ▲ +98.3k  │  5h ▰▱▱▱▱▱▱▱ 2% · 3h32  │  7d ▰▰▰▰▱▱▱▱ 53% · 4d11h  │  cache 56 min  │  ≈ $0.41 (+$0.16)
 ```
 
 Reading it left to right:
@@ -14,8 +14,8 @@ Reading it left to right:
 | `67% of context  134.4k / 200k` | Share of the context window used, and tokens used out of the window size. |
 | `▂▃▄▅▆█` | Context size over the last 16 turns, oldest on the left, scaled between their lowest (`▁`) and highest (`█`). |
 | `▲ +98.3k` | What the last turn added to the context (`▼` when it shrank, for example after `/compact`). |
-| `5h ╍╍──── 2% · 3h32` | The 5-hour plan limit: a gauge, the share used, and the time until it resets. |
-| `7d ━━╍─── 53% · 4d11h` | The same for the 7-day limit. |
+| `5h ▰▱▱▱▱▱▱▱ 2% · 3h32` | The 5-hour plan limit: a gauge, the share used, and the time until it resets. |
+| `7d ▰▰▰▰▱▱▱▱ 53% · 4d11h` | The same for the 7-day limit. |
 | `cache 56 min` | Time left before the prompt cache expires and the next message pays full price for the whole context. |
 | `≈ $0.41 (+$0.16)` | Session cost so far, and what the last prompt added. |
 
@@ -41,16 +41,11 @@ It's based on the example in [Claude Code Mods: Build Your Own AI Coding Experie
 
 **Trend** (`▲ +98.3k`). How many tokens the last turn added to the context, `▼` with the amount freed when it shrank (after `/compact`), or `steady`.
 
-**5-hour limit** (`5h ╍╍──── 2% · 3h32`). Your Claude plan's rolling 5-hour usage limit. It is account-wide: it counts every Claude Code session and claude.ai, not only this session. The gauge compares the share of the limit used with the share of the 5-hour window already gone:
+**5-hour limit** (`5h ▰▱▱▱▱▱▱▱ 2% · 3h32`). Your Claude plan's rolling 5-hour usage limit. It is account-wide: it counts every Claude Code session and claude.ai, not only this session. The gauge's 8 pills show the share of the limit used (`▰`, at least one as soon as there is any usage; `▱` for the rest). Its colour compares that share with the share of the 5-hour window already gone: green while usage is behind the clock, yellow when ahead of it, and red at 15 points ahead or 90% used.
 
-- `━` usage that is within the time elapsed,
-- `╍` in colour: usage ahead of the clock (you are spending faster than the window passes),
-- `╍` dim: time gone that you have not used,
-- `─` the rest of the window.
+Then the percent of the limit used, and the time until the window resets (`3h32` is 3 hours 32 minutes).
 
-Then the percent of the limit used, and the time until the window resets (`3h32` is 3 hours 32 minutes). The gauge is green while usage is behind the clock, yellow when ahead of it, and red at 15 points ahead or 90% used.
-
-**7-day limit** (`7d ━━╍─── 53% · 4d11h`). The same for the plan's weekly limit. `4d11h` is the time until it resets, 4 days 11 hours, not the session's age.
+**7-day limit** (`7d ▰▰▰▰▱▱▱▱ 53% · 4d11h`). The same for the plan's weekly limit. `4d11h` is the time until it resets, 4 days 11 hours, not the session's age.
 
 The two limit gauges appear only on a Claude subscription, once a response has reported them; with an API key there are none.
 

@@ -5,7 +5,9 @@ import type { Cost, Limit, Reading } from '../types'
 
 const HISTORY = 16
 const BARS = '▁▂▃▄▅▆▇█'
-const GAUGE_CELLS = 6
+const GAUGE_CELLS = 8
+const TONES = { green: '#50c878', yellow: '#e6c828', red: '#e64646' }
+const GAUGE_EMPTY = '#3c3c3c'
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
@@ -179,8 +181,8 @@ function turnsSegment(history: Reading[], rgb: readonly number[]): Segment {
   return segment(parts)
 }
 
-// A gauge of the share used against the share of the window's time elapsed:
-// ━ used within the time, ╍ coloured when used ahead of time, ╍ dim for time not yet used.
+// ▰ the share of the limit used, at least one for any usage, coloured by pace: the share used
+// against the share of the window's time elapsed.
 function limitSegment(limit: Limit, now: number): Segment {
   const span = SPANS[limit.kind]
   const resetsAt = limit.resetsAt ? Date.parse(limit.resetsAt) : NaN
@@ -188,18 +190,14 @@ function limitSegment(limit: Limit, now: number): Segment {
   const used = Math.max(0, limit.percentUsed)
   const elapsed = span && left !== null ? Math.min(100, Math.max(0, ((span - left) / span) * 100)) : used
   const pace = used - elapsed
-  const color = used >= USED_ALERT || pace > PACE_ALERT ? 'red' : pace > 0 ? 'yellow' : 'green'
+  const tone = used >= USED_ALERT || pace > PACE_ALERT ? 'red' : pace > 0 ? 'yellow' : 'green'
 
-  const usedCells = Math.round((used / 100) * GAUGE_CELLS)
-  const timeCells = Math.round((elapsed / 100) * GAUGE_CELLS)
-  const filled = Math.min(GAUGE_CELLS, Math.max(usedCells, timeCells))
+  const usedCells = used > 0 ? Math.min(GAUGE_CELLS, Math.max(1, Math.round((used / 100) * GAUGE_CELLS))) : 0
   const parts: Segment['parts'] = [
     { text: `${LIMIT_LABELS[limit.kind] ?? limit.kind} ` },
-    { text: '━'.repeat(Math.min(usedCells, timeCells)), color },
-    { text: '╍'.repeat(Math.max(0, usedCells - timeCells)), color },
-    { text: '╍'.repeat(Math.max(0, timeCells - usedCells)), dim: true },
-    { text: '─'.repeat(GAUGE_CELLS - filled), dim: true },
-    { text: ` ${Math.round(used)}%`, bold: true, color: color === 'red' ? 'red' : undefined },
+    { text: '▰'.repeat(usedCells), color: TONES[tone] },
+    { text: '▱'.repeat(GAUGE_CELLS - usedCells), color: GAUGE_EMPTY },
+    { text: ` ${Math.round(used)}%`, bold: true, color: tone === 'red' ? 'red' : undefined },
   ]
   if (left !== null) {
     parts.push({ text: ` · ${duration(left)}`, dim: true })
