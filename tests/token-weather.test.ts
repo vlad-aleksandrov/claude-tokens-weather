@@ -102,9 +102,22 @@ describe('token-weather', () => {
       expect(text).toContain('≈ $0.41 (+$0.16)')
     }
 
-    await clock.advance(60 * 60_000)
-    const expired = await $.ui.mount({ plugin: 'token-weather', surface: 'terminal', component: 'AbovePrompt', props: band(160) })
-    expect((await expired.findAll({ type: 'Text' })).map(t => t.text).join('')).toContain('cache expired')
+    const cache = async () => {
+      const ui = await $.ui.mount({ plugin: 'token-weather', surface: 'terminal', component: 'AbovePrompt', props: band(160) })
+      const texts = await ui.findAll({ type: 'Text' })
+      const at = texts.findIndex(t => t.text === 'cache ')
+      return { text: texts[at + 1]?.text, color: texts[at + 1]?.props.color }
+    }
+    await clock.advance((50 * 60 + 55) * 1_000)
+    expect(await cache()).toEqual({ text: '5 min', color: undefined })
+    await clock.advance(6_000)
+    expect(await cache()).toEqual({ text: '4:59', color: 'yellow' })
+    await clock.advance((2 * 60 + 58) * 1_000)
+    expect(await cache()).toEqual({ text: '2:01', color: 'yellow' })
+    await clock.advance(2_000)
+    expect(await cache()).toEqual({ text: '1:59', color: 'red' })
+    await clock.advance(119_000)
+    expect(await cache()).toEqual({ text: 'expired', color: 'red' })
 
     const narrow = await $.ui.mount({ plugin: 'token-weather', surface: 'terminal', component: 'AbovePrompt', props: band(80) })
     const narrowText = (await narrow.findAll({ type: 'Text' })).map(t => t.text).join('')

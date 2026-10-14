@@ -15,6 +15,9 @@ const LIMIT_LABELS: Record<string, string> = { five_hour: '5h', seven_day: '7d' 
 const PACE_ALERT = 15
 const USED_ALERT = 90
 const SEPARATOR = '  │  '
+// The cache countdown turns to m:ss and ticks every second under CACHE_SOON, and goes red under CACHE_URGENT.
+const CACHE_SOON = 5 * MINUTE
+const CACHE_URGENT = 2 * MINUTE
 // The sparkline's older bars stay this grey; the newest FADE_BARS brighten into the forecast colour.
 const FADE_FROM = [60, 60, 60] as const
 const FADE_BARS = 5
@@ -48,8 +51,18 @@ export const register: Register = on => {
     if (usage.cost && !(await read($, cost))) {
       await update($, cost, () => ({ total: usage.cost!.usd, atLastTurn: usage.cost!.usd, lastPrompt: null }))
     }
-    // The limits' time left and the cache countdown move without any event.
-    $.clock.every(MINUTE, () => $.ui.invalidate('ui.render'))
+    // The limits' time left and the cache countdown move without any event: a redraw each minute,
+    // and each second while the cache is in its last minutes.
+    let seconds = 0
+    $.clock.every(1_000, () => {
+      seconds++
+      void (async () => {
+        const left = cacheLeft(await read($, lastTurnAt), await read($, limits), await $.clock.now())
+        if (seconds % 60 === 0 || (left !== null && left > -1_000 && left < CACHE_SOON)) {
+          $.ui.invalidate('ui.render')
+        }
+      })()
+    })
     return result
   })
 
@@ -196,18 +209,31 @@ function limitSegment(limit: Limit, now: number): Segment {
 
 // Claude Code keeps the prompt cache for an hour on a subscription within its limits, else for
 // 5 minutes; each request restarts it. The last main turn's end stands for its last request.
-function cacheSegment(at: number | null, rateLimits: Limit[], now: number): Segment | null {
+function cacheLeft(at: number | null, rateLimits: Limit[], now: number) {
   if (at === null) {
     return null
   }
   const plan = rateLimits.filter(l => l.kind in SPANS)
   const ttl = plan.length > 0 && plan.every(l => l.percentUsed < 100) ? HOUR : 5 * MINUTE
-  const left = at + ttl - now
-  return segment(
-    left > 0
-      ? [{ text: 'cache ' }, { text: duration(left), bold: true }]
-      : [{ text: 'cache ' }, { text: 'expired', bold: true, color: 'red' }],
-  )
+  return at + ttl - now
+}
+
+function cacheSegment(at: number | null, rateLimits: Limit[], now: number): Segment | null {
+  const left = cacheLeft(at, rateLimits, now)
+  if (left === null) {
+    return null
+  }
+  if (left <= 0) {
+    return segment([{ text: 'cache ' }, { text: 'expired', bold: true, color: 'red' }])
+  }
+  if (left >= CACHE_SOON) {
+    return segment([{ text: 'cache ' }, { text: duration(left), bold: true }])
+  }
+  const secs = Math.ceil(left / 1_000)
+  return segment([
+    { text: 'cache ' },
+    { text: `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`, bold: true, color: left < CACHE_URGENT ? 'red' : 'yellow' },
+  ])
 }
 
 function costSegment(c: Cost | null): Segment | null {

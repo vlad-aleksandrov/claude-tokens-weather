@@ -54,7 +54,7 @@ Then the percent of the limit used, and the time until the window resets (`3h32`
 
 The two limit gauges appear only on a Claude subscription, once a response has reported them; with an API key there are none.
 
-**Prompt cache** (`cache 56 min`). Each message keeps the start of the conversation cached; the next message reads it from the cache at about a tenth of the input price, and every message restarts the clock. The countdown is the time left before the cache expires, counted from the end of your last turn. After that it shows `expired`: the next message writes the whole context again at full price, which on a subscription counts against your 5h and 7d limits. Reply before it runs out to keep a long session cheap, or `/compact` first after a long pause.
+**Prompt cache** (`cache 56 min`). Each message keeps the start of the conversation cached; the next message reads it from the cache at about a tenth of the input price, and every message restarts the clock. The countdown is the time left before the cache expires, counted from the end of your last turn. After that it shows `expired`: the next message writes the whole context again at full price, which on a subscription counts against your 5h and 7d limits. In the last 5 minutes the countdown switches to `m:ss` (`4:59`, `4:58`, …) and ticks every second, in yellow, then red for the last 2 minutes. Reply before it runs out to keep a long session cheap, or `/compact` first after a long pause.
 
 The cache lasts 1 hour on a Claude subscription within its limits, and 5 minutes otherwise (an API key, or past a limit). That is Claude Code's default rule, inferred by the mod rather than reported by Claude Code: environment overrides such as `FORCE_PROMPT_CACHING_5M` are not read.
 
