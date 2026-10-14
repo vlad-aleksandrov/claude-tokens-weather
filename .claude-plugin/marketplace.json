@@ -1,0 +1,6 @@
+{
+  "name": "claude-tokens-weather",
+  "description": "Token Weather: a live context-window forecast above the Claude Code prompt.",
+  "owner": { "name": "Vlad Aleksandrov" },
+  "plugins": [{ "name": "token-weather", "source": "./" }]
+}
