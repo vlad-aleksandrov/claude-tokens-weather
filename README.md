@@ -46,6 +46,16 @@ claude plugin install token-weather --marketplace vlad-aleksandrov/claude-tokens
 
 Start a new session, or run `/reload-plugins`, and the forecast appears after your first turn.
 
+If the marketplace install isn't available, clone the repo and load it straight from the folder:
+
+```sh
+git clone https://github.com/vlad-aleksandrov/claude-tokens-weather.git ~/claude-tokens-weather
+claude plugin validate ~/claude-tokens-weather    # confirms your build accepts it
+claude --plugin-dir ~/claude-tokens-weather
+```
+
+`--plugin-dir` loads the mod for that session only, so pass it each time you start `claude`.
+
 To remove it: `claude plugin uninstall token-weather`.
 
 ## How it works
