@@ -15,13 +15,16 @@ const LIMIT_LABELS: Record<string, string> = { five_hour: '5h', seven_day: '7d' 
 const PACE_ALERT = 15
 const USED_ALERT = 90
 const SEPARATOR = '  │  '
+// The sparkline's older bars stay this grey; the newest FADE_BARS brighten into the forecast colour.
+const FADE_FROM = [60, 60, 60] as const
+const FADE_BARS = 5
 
 const FORECAST = [
-  { upTo: 25, icon: '🌞', word: 'Clear', color: 'yellow' },
-  { upTo: 50, icon: '⛅', word: 'Cloudy', color: 'cyan' },
-  { upTo: 75, icon: '☔', word: 'Showers', color: 'blue' },
-  { upTo: 90, icon: '⚡', word: 'Storm', color: 'magenta' },
-  { upTo: Infinity, icon: '🌀', word: 'Compact soon', color: 'red' },
+  { upTo: 25, icon: '🌞', word: 'Clear', color: 'yellow', rgb: [230, 200, 40] },
+  { upTo: 50, icon: '⛅', word: 'Cloudy', color: 'cyan', rgb: [60, 200, 220] },
+  { upTo: 75, icon: '☔', word: 'Showers', color: 'blue', rgb: [80, 130, 240] },
+  { upTo: 90, icon: '⚡', word: 'Storm', color: 'magenta', rgb: [210, 80, 210] },
+  { upTo: Infinity, icon: '🌀', word: 'Compact soon', color: 'red', rgb: [230, 70, 70] },
 ] as const
 
 const readings = atom({ plugin: 'token-weather', key: 'readings' } as const, [] as Reading[])
@@ -94,7 +97,7 @@ export const register: Register = on => {
     let room = e.props.bodyColumns - (head.length + 1 + core.length + 2)
 
     const optional: Segment[] = [
-      turnsSegment(history, forecast.color),
+      turnsSegment(history, forecast.rgb),
       ...['five_hour', 'seven_day'].flatMap(kind => {
         const limit = rateLimits.find(l => l.kind === kind)
         return limit ? [limitSegment(limit, now)] : []
@@ -149,8 +152,13 @@ function segment(parts: Segment['parts']): Segment {
   return { width: parts.reduce((sum, p) => sum + [...p.text].length, 0), parts }
 }
 
-function turnsSegment(history: Reading[], color: string): Segment {
-  const parts: Segment['parts'] = [{ text: sparkline(history), color }]
+function turnsSegment(history: Reading[], rgb: readonly number[]): Segment {
+  const bars = sparkline(history)
+  const from = Math.max(0, bars.length - FADE_BARS)
+  const parts: Segment['parts'] = bars.map((bar, i) => {
+    const t = i < from ? 0 : (i - from + 1) / (bars.length - from)
+    return { text: bar, color: hex(FADE_FROM.map((start, c) => start + ((rgb[c] ?? start) - start) * t)) }
+  })
   const previous = history.at(-2)
   if (previous) {
     parts.push({ text: `  ${trend(history.at(-1)!.tokens - previous.tokens)}`, dim: true })
@@ -217,7 +225,11 @@ function sparkline(history: Reading[]) {
   const tokens = history.map(r => r.tokens)
   const low = Math.min(...tokens)
   const span = Math.max(...tokens) - low || 1
-  return tokens.map(t => BARS[Math.round(((t - low) / span) * (BARS.length - 1))]).join('')
+  return tokens.map(t => BARS[Math.round(((t - low) / span) * (BARS.length - 1))] ?? '▁')
+}
+
+function hex(rgb: number[]) {
+  return `#${rgb.map(c => Math.round(c).toString(16).padStart(2, '0')).join('')}`
 }
 
 function trend(delta: number) {

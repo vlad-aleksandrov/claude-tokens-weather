@@ -37,7 +37,16 @@ describe('token-weather', () => {
       expect(text).toContain('▁▄█')
       expect(text).toContain('▲ +49.4k')
       expect(text).not.toContain('last turn')
+      const bars = (await ui.findAll({ type: 'Text' })).filter(t => [...t.text].length === 1 && '▁▂▃▄▅▆▇█'.includes(t.text))
+      expect(bars.map(b => b.props.color)).toEqual(['#435378', '#496bb4', '#5082f0'])
     }
+
+    for (const tokens of [140_000, 145_000, 150_000]) {
+      await measure(tokens)
+    }
+    const faded = await $.ui.mount({ plugin: 'token-weather', surface: 'terminal', component: 'AbovePrompt', props: band(120) })
+    const fadedBars = (await faded.findAll({ type: 'Text' })).filter(t => [...t.text].length === 1 && '▁▂▃▄▅▆▇█'.includes(t.text))
+    expect(fadedBars.map(b => b.props.color)).toEqual(['#3c3c3c', '#5a405a', '#784478', '#964896', '#b44cb4', '#d250d2'])
 
     await measure(170_000)
     const narrow = await $.ui.mount({ plugin: 'token-weather', surface: 'terminal', component: 'AbovePrompt', props: band(40) })

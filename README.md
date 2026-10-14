@@ -37,7 +37,7 @@ It's based on the example in [Claude Code Mods: Build Your Own AI Coding Experie
 
 **Context** (`67% of context  134.4k / 200k`). The share of the context window in use, then the tokens in use out of the window size. When it nears 100%, Claude Code compacts the conversation on its own; running `/compact` earlier lets you choose the moment.
 
-**Recent turns** (`▂▃▄▅▆█`). The context size after each of the last 16 turns, oldest on the left. The bars are scaled between the smallest (`▁`) and the largest (`█`) of those 16 readings, not against the window, so steady growth still shows deep into a 1M window. After `/compact` the newest bar drops to `▁`.
+**Recent turns** (`▂▃▄▅▆█`). The context size after each of the last 16 turns, oldest on the left. The bars are scaled between the smallest (`▁`) and the largest (`█`) of those 16 readings, not against the window, so steady growth still shows deep into a 1M window. After `/compact` the newest bar drops to `▁`. Older bars are dark grey; the newest 5 brighten into the forecast colour, so the latest reading stands out.
 
 **Trend** (`▲ +98.3k`). How many tokens the last turn added to the context, `▼` with the amount freed when it shrank (after `/compact`), or `steady`.
 
