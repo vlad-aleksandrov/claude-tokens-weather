@@ -41,9 +41,17 @@ It's based on the example in [Claude Code Mods: Build Your Own AI Coding Experie
 
 **Trend** (`▲ +98.3k`). How many tokens the last turn added to the context, `▼` with the amount freed when it shrank (after `/compact`), or `steady`.
 
-**5-hour limit** (`5h ▰▱▱▱▱▱▱▱ 2% · 3h32`). Your Claude plan's rolling 5-hour usage limit. It is account-wide: it counts every Claude Code session and claude.ai, not only this session. The gauge's 8 pills show the share of the limit used (`▰`, at least one as soon as there is any usage; `▱` for the rest). Its colour compares that share with the share of the 5-hour window already gone: green while usage is behind the clock, yellow when ahead of it, and red at 15 points ahead or 90% used.
+**5-hour limit** (`5h ▰▱▱▱▱▱▱▱ 2% · 3h32`). Your Claude plan's rolling 5-hour usage limit. It is account-wide: it counts every Claude Code session and claude.ai, not only this session. The gauge's 8 pills show the share of the limit used (`▰`, at least one as soon as there is any usage; `▱` for the rest). Then the percent of the limit used, and the time until the window resets (`3h32` is 3 hours 32 minutes).
 
-Then the percent of the limit used, and the time until the window resets (`3h32` is 3 hours 32 minutes).
+The colour is set by **pace**, not by the percentage alone. Pace is the share of the limit used minus the share of the window's time already gone:
+
+| Colour | When | Means |
+| --- | --- | --- |
+| 🟢 green | pace ≤ 0 | You have used less than the time that has passed. |
+| 🟡 yellow | pace above 0, up to 15 points | You are slightly ahead of the clock. |
+| 🔴 red | pace above 15 points, or 90% used | At this rate you reach the limit before it resets. The percentage turns red too. |
+
+For example, 6% used with 55% of the 5 hours gone is a pace of −49: green. 53% of the weekly limit used with 37% of the week gone is a pace of +16: red, even though half the limit is still left. Only 90% used turns a gauge red on its own.
 
 **7-day limit** (`7d ▰▰▰▰▱▱▱▱ 53% · 4d11h`). The same for the plan's weekly limit. `4d11h` is the time until it resets, 4 days 11 hours, not the session's age.
 
