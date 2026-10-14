@@ -1,6 +1,6 @@
 {
   "name": "claude-tokens-weather",
-  "description": "Token Weather: a live context-window forecast above the Claude Code prompt.",
+  "description": "Token Weather: context-window forecast, plan limits, prompt cache and session cost in one line above the Claude Code prompt.",
   "owner": { "name": "Vlad Aleksandrov" },
   "plugins": [{ "name": "token-weather", "source": "./" }]
 }

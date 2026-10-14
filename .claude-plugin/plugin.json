@@ -1,7 +1,7 @@
 {
   "name": "token-weather",
-  "version": "0.1.0",
-  "description": "A live forecast of the context window, drawn in the band above the prompt.",
+  "version": "0.2.0",
+  "description": "One line above the prompt: a weather forecast of the context window with a fading sparkline of recent turns, your 5-hour and 7-day plan limits against the time elapsed, the prompt cache's time left, and the session cost with the last prompt's share.",
   "author": { "name": "Vlad Aleksandrov" },
   "license": "MIT",
   "types": "./types/index.d.ts"
